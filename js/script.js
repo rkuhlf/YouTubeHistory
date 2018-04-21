@@ -1,5 +1,9 @@
-let channelName = 'wesbos';
+let channelName = 'pewdiepie';
 const API_KEY = "AIzaSyDWfNbRt-OJ3Iau2a8bQlGLAVFGndsNTmY";
+const resultsNum = 50;
+
+let xpoints = [];
+let ypoints = [];
 
 $(document).ready(function() {
     $.get(
@@ -15,27 +19,57 @@ $(document).ready(function() {
             });
         }
     );
+
+    var intervalId = setInterval(function() {
+        if (xpoints.length == resultsNum && ypoints.length == resultsNum) {
+            graph();
+            clearInterval(intervalId);
+        }
+    }, 1000);
+
+
 });
+
+function graph() {
+    var trace1 = {
+        x: xpoints,
+        y: ypoints,
+        mode: 'markers'
+    };
+
+    var graphInfo = [trace1];
+
+    var layout = {
+        title: 'Line and Scatter Plot'
+    };
+
+    Plotly.newPlot('graph', graphInfo, layout);
+}
 
 function getVids(pid) {
     $.get(
         "https://www.googleapis.com/youtube/v3/playlistItems", {
             part: 'snippet',
-            maxResults: 10,
+            maxResults: resultsNum,
             playlistId: pid,
             key: API_KEY
         },
         function(data) {
+            console.log(data);
             var output;
             $.each(data.items, function(i, item) {
-                videoTitle = item.snippet.title;
+                videoDate = item.snippet.publishedAt;
+                xpoints.push(videoDate);
                 videoId = item.snippet.resourceId.videoId;
-
-                output = '<li><iframe src=\"//www.youtube.com/embed/' + videoId + '\"></iframe></li>';
-
-                // Add to results list
-                $('#results').append(output);
+                $.getJSON('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + videoId + '&key=' + API_KEY, function(video) {
+                    ypoints.push(video.items[0].statistics.viewCount);
+                });
             });
+            $.each(xpoints, function(i, item) {
+                xpoints[i] = xpoints[i].replace('T', ' ');
+                xpoints[i] = xpoints[i].slice(0, -5);
+            });
+
         }
     );
 }
