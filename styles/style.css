@@ -1,0 +1,19 @@
+#container {
+	width: 800px;
+	margin: auto;
+	overflow: auto;
+	background-color: white;
+	padding: 15px;
+}
+
+body {
+	background-color: #f4f4f4;
+	font-family: "Arial", sans-serif;
+	font-size: 14px;
+	color: #666;
+}
+
+iframe {
+	height: 400px;
+	width: 100%;
+}
