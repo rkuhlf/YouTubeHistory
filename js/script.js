@@ -10,15 +10,35 @@ let pages = -1;
 $(document).ready(function() {
     $("#loadingBar").css("visibility", "hidden");
 
+
     $('#addData').on('click', function() {
-        c = $("#youtuber").val();
-        c = c.replace(' ', '');
-        n = $("#max").val();
-        addData(c, n);
+        addYoutuber();
+    });
+
+    $('#youtuber').keypress(function(e) {
+        if (e.which == 13) {
+            $("#max").focus();
+        }
+    });
+
+    $("#max").keypress(function(e) {
+        console.log(e);
+        if (e.which == 13) {
+            addYoutuber();
+        }
     });
 
     addData('pewdiepie', 143);
 });
+
+function addYoutuber() {
+    c = $("#youtuber").val();
+    c = c.replace(' ', '');
+    n = $("#max").val();
+    addData(c, n);
+    $("#youtuber").val('');
+    $("#youtuber").focus();
+}
 
 function addData(channelName, num) {
     $("#loadingBar").css("visibility", "visible");
@@ -53,7 +73,6 @@ function addData(channelName, num) {
 
     var intervalId = setInterval(function() {
         if (xpoints.length == resultsNum && ypoints.length == resultsNum) {
-            console.log(titles.length);
             graph(xpoints, ypoints, channelName, titles);
             clearInterval(intervalId);
         }
@@ -105,7 +124,6 @@ function updatePoints(data) {
         videoId = item.snippet.resourceId.videoId;
         $.getJSON('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + videoId + '&key=' + API_KEY, function(video) {
             let thisI = pages * 50 + i;
-            console.log(thisI);
             ypoints[thisI] = video.items[0].statistics.viewCount;
         });
     });
