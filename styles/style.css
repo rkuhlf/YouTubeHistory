@@ -48,3 +48,18 @@ form div {
 .index {
 	display: none;
 }
+
+#loadingBar {
+    width: 100%;
+    background-color: grey;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    z-index: 2;
+}
+
+#loadedIn {
+    width: 1%;
+    height: 5px;
+    background-color: green;
+}

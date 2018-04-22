@@ -5,8 +5,10 @@ let titles = [];
 let nextPageToken;
 let resultsNum;
 var traces = [];
+let pages = -1;
 
 $(document).ready(function() {
+    $("#loadingBar").css("visibility", "hidden");
 
     $('#addData').on('click', function() {
         c = $("#youtuber").val();
@@ -19,6 +21,8 @@ $(document).ready(function() {
 });
 
 function addData(channelName, num) {
+    $("#loadingBar").css("visibility", "visible");
+
     n = traces.length + 1;
     $("#graphedYoutubers").append('<div class="channelContainer"><div>YouTuber: ' + channelName + '</div><br><div>Videos: ' + num + '</div><div class="index">' + n + '</div><a href="#" class="close"></a></div>');
     $('.close').unbind('click').on('click', function() {
@@ -31,6 +35,7 @@ function addData(channelName, num) {
     ypoints = [];
     titles = [];
     nextPageToken = undefined;
+    pages = -1;
 
     $.get(
         "https://www.googleapis.com/youtube/v3/channels", {
@@ -48,6 +53,7 @@ function addData(channelName, num) {
 
     var intervalId = setInterval(function() {
         if (xpoints.length == resultsNum && ypoints.length == resultsNum) {
+            console.log(titles.length);
             graph(xpoints, ypoints, channelName, titles);
             clearInterval(intervalId);
         }
@@ -71,6 +77,8 @@ function graph(xAxis, yAxis, channelName, videoTitles) {
     };
 
     Plotly.newPlot('graph', graphInfo, layout);
+    $("#loadingBar").css("visibility", "hidden");
+
 }
 
 function getVids(pid) {
@@ -85,19 +93,20 @@ function getVids(pid) {
 }
 
 function updatePoints(data) {
+    pages++;
     nextPageToken = data.nextPageToken;
-    console.log(data);
 
     var output;
     $.each(data.items, function(i, item) {
         videoDate = item.snippet.publishedAt;
         xpoints.push(videoDate);
+        titles.push(item.snippet.title);
+        setLoadingBar(xpoints.length * 100 / resultsNum);
         videoId = item.snippet.resourceId.videoId;
         $.getJSON('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + videoId + '&key=' + API_KEY, function(video) {
-            ypoints.push(video.items[0].statistics.viewCount);
-        });
-        $.getJSON('https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' + videoId + '&key=' + API_KEY, function(video) {
-            titles.push(video.items[0].snippet.localized.title)
+            let thisI = pages * 50 + i;
+            console.log(thisI);
+            ypoints[thisI] = video.items[0].statistics.viewCount;
         });
     });
     $.each(xpoints, function(i, item) {
@@ -117,6 +126,7 @@ function updatePoints(data) {
     } else {
         resultsNum = xpoints.length;
     }
+
 }
 
 function removeData(index) {
@@ -136,4 +146,10 @@ function removeData(index) {
     };
 
     Plotly.newPlot('graph', graphInfo, layout);
+}
+
+function setLoadingBar(w) {
+    var elem = $("#loadedIn");
+
+    elem.css('width', w + '%');
 }
